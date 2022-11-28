@@ -1,23 +1,23 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:thecat_hackerrank/models/catclasses.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(const CatClass());
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class CatClass extends StatefulWidget {
+  const CatClass({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<CatClass> createState() => _CatClassState();
 }
 
 var url = Uri.https('api.thecatapi.com', '/v1/breeds', {'q': '{http}'});
 
-class _MyAppState extends State<MyApp> {
+class _CatClassState extends State<CatClass> {
   Future<List<CatsPost>>? _catsList;
-  Future<List<CatsPost>?> _getCats() async {
+  Future<List<CatsPost>> _getCats() async {
     final response = await http.get(url);
 
     List<CatsPost> cats = [];
@@ -32,55 +32,62 @@ class _MyAppState extends State<MyApp> {
             intelligence: i["intelligence"],
             imageUrl: i["image"]));
       }
+      return cats;
     } else {
       return throw Exception("Falló la conexión.");
     }
-    print(cats);
   }
 
   @override
   void initState() {
     super.initState();
-    _getCats();
+    _catsList = _getCats();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Material App',
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Material App Bar'),
-        ),
-        body: const Center(
-          child: Text('Hello World'),
+        body: FutureBuilder(
+          future: _catsList,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView(
+                children: _catsList2(snapshot.data),
+              );
+            } else if (snapshot.hasError) {
+              print(snapshot.error);
+            }
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
         ),
       ),
     );
   }
 }
 
+List<Widget> _catsList2(List<CatsPost>? data) {
+  List<Widget> cats = [];
+
+  for (var cat in data!) {
+    cats.add(Card(
+      child: Column(children: [Image.network(CatsPost.imageUrl)]),
+    ));
+  }
+  return _catsList2(data);
+}
+
+CatsPost catos = CatsPost();
+
 class CatsPost {
-  final String? breedName;
-  final String? origin;
-  final int? affectionLevel;
-  final int? intelligence;
+  final String breedName;
+  final String origin;
+  final int affectionLevel;
+  final int intelligence;
   final dynamic imageUrl;
 
-  CatsPost(
-      {this.breedName,
-      this.origin,
-      this.affectionLevel,
-      this.intelligence,
-      this.imageUrl});
-
-  factory CatsPost.fromJson(Map<String, dynamic> json) {
-    return CatsPost(
-      breedName: json['breedName'],
-      origin: json['origin'],
-      affectionLevel: json['affectionLevel'],
-      intelligence: json['intelligence'],
-      imageUrl: json['imageUrl'],
-    );
-  }
+  CatsPost(this.breedName, this.origin, this.affectionLevel, this.intelligence,
+      this.imageUrl) {}
 }
