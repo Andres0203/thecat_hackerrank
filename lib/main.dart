@@ -72,13 +72,11 @@ List<Widget> _catsList2(List<CatsPost>? data) {
 
   for (var cat in data!) {
     cats.add(Card(
-      child: Column(children: [Image.network(CatsPost.imageUrl)]),
+      child: Column(children: [Image.network(CatsPost.imageURL)]),
     ));
   }
   return _catsList2(data);
 }
-
-CatsPost catos = CatsPost();
 
 class CatsPost {
   final String breedName;
@@ -87,6 +85,20 @@ class CatsPost {
   final int intelligence;
   final dynamic imageUrl;
 
-  CatsPost(this.breedName, this.origin, this.affectionLevel, this.intelligence,
-      this.imageUrl) {}
+  CatsPost(
+      {required this.breedName,
+      required this.origin,
+      required this.affectionLevel,
+      required this.intelligence,
+      this.imageUrl});
+
+  factory CatsPost.fromJson(Map<String, dynamic> json) {
+    return CatsPost(
+      breedName: json['breedName'],
+      origin: json['origin'],
+      affectionLevel: json['affectionLevel'],
+      intelligence: json['intelligence'],
+      imageUrl: json['imageUrl'],
+    );
+  }
 }
